@@ -1,3 +1,9 @@
+# CS778-Foundations-Of-Modern-AI
+
+This project focuses on employing a Hybrid Approach to Enhance Human Alignment of LLMs using a combination of Dueling Bandits as well as DPO.
+
+---
+
 # 🚀 Online & MixP DPO Implementation using Pythia-410M
 
 ### _Optimized for 8GB VRAM setups – A lightweight adaptation of **Samplers-in-Online-DPO**_
@@ -26,7 +32,6 @@ It is **based on the official implementation and paper**:
 ---
 
 ## 📂 Project Structure
-
 ```
 alignment/
 ├── data/                          # Generated & annotated data
@@ -62,7 +67,6 @@ alignment/
 ## 🚀 Usage Pipeline
 
 ### 🔹 1️⃣ Online DPO — Example for Iteration 2
-
 ```bash
 # Generation (vllm env)
 bash scripts/safe_rlhf/gen_online_1b.sh 2 3 online
@@ -76,7 +80,6 @@ bash scripts/safe_rlhf/dpo_online_1b.sh 2
 ```
 
 ### 🔹 2️⃣ MixP DPO — Example for Iteration 1
-
 ```bash
 # Generation (vllm env)
 bash scripts/safe_rlhf/gen_mixp1.sh 1 4
@@ -114,7 +117,6 @@ online_410m_iter1, online_410m_iter2, mixp_410m_iter1
 ## 📎 References
 
 ### 🔸 Paper Citation
-
 ```bibtex
 @inproceedings{
   shi2024crucialroleosamplerdpo,
@@ -127,7 +129,6 @@ online_410m_iter1, online_410m_iter2, mixp_410m_iter1
 ```
 
 ### 🔸 Original Repository Citation
-
 ```bibtex
 @software{shi2024samplersgithub,
   author = {Ruizhe Shi and collaborators},
@@ -168,4 +169,3 @@ MIT License – see [LICENSE](LICENSE) file.
 ## ⭐ Acknowledgments
 
 If this repo helps you, consider giving the [original authors' repository](https://github.com/szze/Samplers-in-Online-DPO) a ⭐ on GitHub and citing their work.
-
