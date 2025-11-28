@@ -59,7 +59,7 @@ class ScriptArguments:
         metadata={"help": "the maximum length of the input tokens"},
     )
     max_new_tokens: Optional[int] = field(
-        default=2048,
+        default=128,
         metadata={"help": "the maximum length of the new tokens"},
     )
     seed: Optional[int] = field(
@@ -92,12 +92,15 @@ torch.manual_seed(seed)
 np.random.seed(seed)
 model = AutoModelForCausalLM.from_pretrained(
         script_args.model_name_or_path,
-        use_flash_attention_2=script_args.flash_attention,
+        use_flash_attention_2=False,
         torch_dtype=torch.bfloat16,
-        trust_remote_code=True
-    ).to("cuda:0")
+        trust_remote_code=True,
+        load_in_4bit=True
+     )#.to("cuda:0")
 model.config.use_cache = True
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
 
 ds = load_dataset(script_args.dataset_name_or_path, split="train")
 ds = ds.map(
@@ -107,11 +110,12 @@ ds = ds.map(
 )
 ds = ds.filter(lambda example: len(example["prompt"]) <= script_args.max_input_length)
 num_iter = script_args.num_iter
-batch_size=20
+batch_size=4
 if num_iter > 0:
-    ds = ds.select(range(10000))
+    ds = ds.select(range(min(len(ds), 1000)))
+
 else:
-    ds = ds.select(range(10000, 12000))
+    ds = ds.select(range(1000, 1200))
 
 data_size = len(ds["prompt"])
 one_num_share = int(data_size / script_args.my_world_size)
@@ -121,7 +125,7 @@ print([script_args.local_index * one_num_share, (script_args.local_index + 1) * 
 print(ds, script_args.dataset_name_or_path)
 print(ds[0])
 
-prompts = ds["prompt"]
+prompts = list(ds["prompt"])
 tokenized_prompts = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=script_args.max_input_length)
 dataset = TensorDataset(tokenized_prompts['input_ids'].type(torch.long).to("cuda:0"), tokenized_prompts['attention_mask'].type(torch.bool).to("cuda:0"))
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
@@ -151,5 +155,15 @@ output_eval_dataset["instances"] = gathered_data
 print("I collect ", len(gathered_data), "samples")
 
 
-with open(script_args.output_dir + str(script_args.local_index) + ".json", "w", encoding="utf8") as f:
+output_eval_dataset = {}
+output_eval_dataset["type"] = "text_only"
+output_eval_dataset["instances"] = gathered_data
+print("I collect ", len(gathered_data), "samples")
+
+# 🔧 FIXED: write in correct directory
+output_path = f"{script_args.output_dir}/gen_data0.json"
+with open(output_path, "w", encoding="utf8") as f:
     json.dump(output_eval_dataset, f, ensure_ascii=False)
+
+print(f"Saved {len(gathered_data)} samples to {output_path}")
+

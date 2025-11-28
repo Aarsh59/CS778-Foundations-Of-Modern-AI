@@ -26,7 +26,7 @@ class ScriptArguments:
 
     # training parameters
     model_name_or_path: Optional[str] = field(
-        default="HuggingFaceH4/mistral-7b-sft-beta",
+        default="EleutherAI/pythia-1.4b",
         metadata={"help": "the location of the model name or path"},
     )
     ref_model: Optional[str] = field(
@@ -48,7 +48,7 @@ class ScriptArguments:
     warmup_steps: Optional[int] = field(default=100, metadata={"help": "the number of warmup steps"})
     weight_decay: Optional[float] = field(default=0.01, metadata={"help": "the weight decay"})
     optimizer_type: Optional[str] = field(default="paged_adamw_32bit", metadata={"help": "the optimizer type"})
-    flash_attention: Optional[bool] = field(default=True, metadata={"help": "whether to use flash attention"})
+    flash_attention: Optional[bool] = field(default=False, metadata={"help": "whether to use flash attention"})
 
     per_device_train_batch_size: Optional[int] = field(default=1, metadata={"help": "train batch size per device"})
     per_device_eval_batch_size: Optional[int] = field(default=1, metadata={"help": "eval batch size per device"})
@@ -66,8 +66,8 @@ class ScriptArguments:
 
     margin_scale: Optional[float] = field(default=1.0, metadata={"help": "the margin scale"})
 
-    max_prompt_length: Optional[int] = field(default=1000, metadata={"help": "the maximum prompt length"})
-    max_length: Optional[int] = field(default=2048, metadata={"help": "the maximum sequence length"})
+    max_prompt_length: Optional[int] = field(default=512, metadata={"help": "the maximum prompt length"})
+    max_length: Optional[int] = field(default=1024, metadata={"help": "the maximum sequence length"})
     max_steps: Optional[int] = field(default=20, metadata={"help": "max number of training steps"})
     num_train_epochs: Optional[int] = field(default=2, metadata={"help": "max number of training epochs"})
     logging_steps: Optional[int] = field(default=2, metadata={"help": "the logging frequency"})
@@ -204,16 +204,18 @@ def prepare_data(
 if __name__ == "__main__":
     parser = HfArgumentParser(ScriptArguments)
     script_args = parser.parse_args_into_dataclasses()[0]
+   
+    print(f"🚀 Using model: {script_args.model_name_or_path}")
+    print(f"🚀 Using reference model: {script_args.ref_model or script_args.model_name_or_path}")
 
     flash_attention = script_args.flash_attention
     set_seed(42)
     
     # 1. load a pretrained model
     model = AutoModelForCausalLM.from_pretrained(
-        script_args.model_name_or_path,
-        use_flash_attention_2=flash_attention,
-        torch_dtype=torch.float16,
-    )
+    script_args.model_name_or_path,
+    device_map="auto",
+)
     model.config.use_cache = False
 
     if script_args.ignore_bias_buffers:
@@ -228,10 +230,9 @@ if __name__ == "__main__":
         ref_name = script_args.model_name_or_path
 
     model_ref = AutoModelForCausalLM.from_pretrained(
-        ref_name,
-        torch_dtype=torch.bfloat16,
-        use_flash_attention_2=flash_attention,
-    )
+    ref_name,
+    device_map="auto",
+)
     tokenizer = AutoTokenizer.from_pretrained(script_args.model_name_or_path)
     if script_args.eos_padding:
         tokenizer.pad_token = tokenizer.eos_token
@@ -294,7 +295,10 @@ if __name__ == "__main__":
         lr_scheduler_type=script_args.lr_scheduler_type,
         warmup_steps=script_args.warmup_steps,
         # optim=script_args.optimizer_type,
-        bf16=True,
+        optim="paged_adamw_8bit",
+
+        fp16=True,
+        bf16=False,
         remove_unused_columns=False,
         run_name=script_args.run_name,
     )

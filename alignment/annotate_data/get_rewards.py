@@ -36,7 +36,8 @@ class ScriptArguments:
         metadata={"help": "the location of the recording file"},
     )
     reward_name_or_path: Optional[str] = field(
-        default="sfairXC/FsfairX-LLaMA3-RM-v0.1",
+        default="OpenAssistant/reward-model-deberta-v3-large",
+
         metadata={"help": "the name of the reward model"},
     )
     input_output_delimiter: Optional[str] = field(
@@ -61,14 +62,34 @@ pipe_kwargs = {
     "batch_size": 1,
 }
 reward_model = script_args.reward_name_or_path
+
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+
+reward_model = script_args.reward_name_or_path
+
+rm_model = AutoModelForSequenceClassification.from_pretrained(reward_model)
+rm_model.to("cuda")  # move to GPU
+
 rm_tokenizer = AutoTokenizer.from_pretrained(reward_model)
+
 rm_pipe = pipeline(
-    model=reward_model,
-    device=device,
+    task="text-classification",
+    model=rm_model,
     tokenizer=rm_tokenizer,
-    model_kwargs={"torch_dtype": torch.bfloat16},
+    device=0,  # GPU
+    return_all_scores=True,
+    function_to_apply="none",
     truncation=True,
+    batch_size=1,
 )
+
+
+
+
+
+
+
+
 
 
 ds_dir = script_args.dataset_name_or_path
