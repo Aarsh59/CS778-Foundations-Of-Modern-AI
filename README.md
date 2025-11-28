@@ -1,6 +1,5 @@
 # CS778-Foundations-Of-Modern-AI
-
-This project focuses on employing a Hybrid Approach to Enhance Human Alignment of LLMs using a combination of Dueling Bandits as well as DPO.
+THis Porject focuses on implementing key RL-Algos like Policy Gradient TRPO and PPO and study them under 5 gym enviroments along with employing a Hybrid Approach to Enhance Human Alignment of LLMs using a combination of Dueling Bandits as well as DPO.
 
 ---
 
