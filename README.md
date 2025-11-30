@@ -103,8 +103,8 @@ bash scripts/safe_rlhf/dpo_mixp.sh 1
 
 | Method     | Model Size | Iterations | Accuracy Trend            |
 |------------|------------|------------|---------------------------|
-| Online DPO | 410M       | 2          | 📈 Improved, stable       |
-| MixP DPO   | 410M       | 1          | ⚠️ High variance, high peaks |
+| Online DPO | 410M       | 2          |  Improved accuracy, unstable       |
+| MixP DPO   | 410M       | 1          | Good Mix between accuracy and Offline Stability  |
 
 📌 **Detailed charts available in W&B runs:**
 ```
