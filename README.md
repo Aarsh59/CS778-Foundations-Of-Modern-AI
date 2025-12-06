@@ -148,11 +148,11 @@ online_410m_iter1, online_410m_iter2, mixp_410m_iter1
 
 ---
 
-## 👥 Contributors
+## Contributors
+- **Aarsh Kaushik** ([@Aarsh59](https://github.com/Aarsh59))
+- **Keyansh Vaish**
+- **Tanmya Siddharth** ([@siriuslythough](https://github.com/siriuslythough))
 
-**Aarsh Kaushik**(@Aarsh59)
-**Keyansh Vaish**  
-**Tanmya Siddharth**(@siriuslythough)  
 
 Indian Institute of Technology Kanpur  
 📬 Open to collaboration and discussions!
